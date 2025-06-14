@@ -3,7 +3,10 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs'
 import { Button } from './button'
-const Header = () => {
+import { checkUser } from '@/lib/checkUser'
+const Header = async () => {
+  const user = await checkUser();
+  
   return (
     <header className="fixed top-0 w-full border-b bg-background/80 backdrop-blur-md z-10">
         <nav className='container mx-auto px-4 h-16 flex items-center justify-between'>
