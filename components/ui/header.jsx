@@ -4,10 +4,15 @@ import Image from 'next/image'
 import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs'
 import { Button } from './button'
 import { checkUser } from '@/lib/checkUser'
-import { Calendar, ShieldCheck, Stethoscope, User } from 'lucide-react'
+import { Calendar, CreditCard, ShieldCheck, Stethoscope, User } from 'lucide-react'
+import { checkAndAllocateCredits } from '@/actions/credits'
+import { Badge } from './badge'
+
 const Header = async () => {
   const user = await checkUser();
-  
+  if(user?.role == "PATIENT") { 
+    await checkAndAllocateCredits(user);
+  }
   return (
     <header className="fixed top-0 w-full border-b bg-background/80 backdrop-blur-md z-10 supports-[backdrop-filter]:bg-backgorund/60">
         <nav className='container mx-auto px-4 h-16 flex items-center justify-between'>
@@ -67,7 +72,25 @@ const Header = async () => {
               )}
             </SignedIn>
 
-
+            {(!user || user?.role === "PATIENT") && (
+              <Link href="/pricing">
+                <Badge
+                  variant="outline"
+                  className="h-9 bg-emerald-900/20 border-emerald-700/30 px-3 py-1 flex items-center gap-2"
+                >
+                  <CreditCard className="h-3.5 w-3.5 text-emerald-400" />
+                  <span className="text-emerald-100">
+                    {user?.role === "PATIENT" ? (
+                      <>
+                        {user.credits} <span className="hidden md:inline">Credits</span>
+                      </>
+                    ) : (
+                      <>Pricing</>
+                    )}
+                  </span>
+                </Badge>
+              </Link>
+            )}
 
             <SignedOut>
               <SignInButton>
