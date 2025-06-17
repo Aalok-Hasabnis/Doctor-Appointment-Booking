@@ -5,6 +5,7 @@ import { ArrowRight, Check, Stethoscope } from "lucide-react";
 import Link from "next/link";
 import { creditBenefits, features, testimonials } from "@/lib/data";
 import { Card, CardHeader, CardContent, CardTitle, CardAction } from "@/components/ui/card";
+import Pricing from "@/components/ui/pricing";
 
 export default function Home() {
   return (
@@ -81,6 +82,7 @@ export default function Home() {
           </div>
             <div>
               {/*princing component */}
+              <Pricing></Pricing>
               <Card className="mt-12 bg-muted/20 border-emerald-900/30">
                 <CardHeader>
                   <CardTitle className="text-xl font-semibold text-white flex items-center">
