@@ -12,7 +12,7 @@ const OnboardingLayout = async ({ children }) => {
   if(user) {
     if(user.role==="PATIENT") {
       redirect('/doctors');
-    } else if(user.role==="DOCTORS") {
+    } else if(user.role==="DOCTOR") {
         if(user.verificationStatus==="VERIFIED") {
           redirect('/doctors');
         } else {

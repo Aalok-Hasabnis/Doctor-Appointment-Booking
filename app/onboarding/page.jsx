@@ -10,10 +10,14 @@ import { Loader2, Stethoscope, User } from "lucide-react";
 import useFetch from "@/hooks/use-fetch";
 import { setUserRole } from "@/actions/onboarding";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { SPECIALTIES } from "@/lib/specialities";
 
 const doctorFormSchema = z.object({
   speciality: z.string().min(1, "Speciality is required"),
-  expreience: z
+  experience: z
     .number()
     .min(5, "Experience must be atleast 5 years")
     .max(70, "Experience must be less than 70 years"),
@@ -103,7 +107,8 @@ const OnboardingPage = () => {
             <CardDescription className="mb-4 text-muted-foreground flex-1">
               Become a verified provider, reach more patients, and grow your online presence with MediConnect.
             </CardDescription>
-            <Button className="w-full mt-auto bg-emerald-600 hover:bg-emerald-700">
+            <Button disabled={loading}
+            className="w-full mt-auto bg-emerald-600 hover:bg-emerald-700">
               Continue as a Doctor
             </Button>
           </CardContent>
@@ -113,7 +118,43 @@ const OnboardingPage = () => {
   }
 
   if (step === "doctor-form") {
-    return <>doctor form</>;
+    return (
+    <Card className='border-emerald-900/20'>
+      <CardContent className='pt-6'>
+        <div className="mb-6">
+            <CardTitle className="text-2xl font-bold text-white mb-2">Complete your Doctors Profile</CardTitle>
+            <CardDescription>
+              Please provide your professional details and verification
+            </CardDescription>
+        </div>
+
+        <form className="space-y-6"> 
+          <div className="space-y-2">
+            <Label htmlFor="speciality"> Medical Speciality </Label>
+            <Select>
+                <SelectTrigger id="specialty">
+                  <SelectValue placeholder="Select your specialty" />
+                </SelectTrigger>
+                <SelectContent>
+                  {SPECIALTIES.map((spec) => (
+                    <SelectItem
+                      key={spec.name}
+                      value={spec.name}
+                      className="flex items-center gap-2"
+                    >
+                      <div className="flex items-center-gap-2">
+                      <span className="text-emerald-400">{spec.icon}</span>
+                      {spec.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+    )
   }
 
   return <div>OnboardingPage</div>;
