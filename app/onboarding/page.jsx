@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { SPECIALTIES } from "@/lib/specialities"; // Fixed: SPECIALTIES instead of SPECIALITIES
+import { SPECIALTIES } from "@/lib/specialities"; 
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -44,8 +44,8 @@ const OnboardingPage = () => {
     resolver: zodResolver(doctorFormSchema),
     defaultValues: {
       speciality: "",
-      experience: undefined, // Fixed: was "expreience"
-      credentialUrl: "", // Fixed: was "url"
+      experience: undefined, 
+      credentialUrl: "",
       description: "",
     }
   });
