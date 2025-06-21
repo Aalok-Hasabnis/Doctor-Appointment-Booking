@@ -13,7 +13,9 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { SPECIALTIES } from "@/lib/specialities";
+import { SPECIALTIES } from "@/lib/specialities"; // Fixed: SPECIALTIES instead of SPECIALITIES
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 const doctorFormSchema = z.object({
   speciality: z.string().min(1, "Speciality is required"),
@@ -42,8 +44,8 @@ const OnboardingPage = () => {
     resolver: zodResolver(doctorFormSchema),
     defaultValues: {
       speciality: "",
-      expreience: undefined,
-      url: "",
+      experience: undefined, // Fixed: was "expreience"
+      credentialUrl: "", // Fixed: was "url"
       description: "",
     }
   });
@@ -66,6 +68,19 @@ const OnboardingPage = () => {
       router.push(data.redirect);
     }
   },[data])
+
+  const onDoctorSubmit = async(data)=> {
+    if(loading) return;
+        
+    const formData = new FormData();
+    formData.append("role", "DOCTOR");
+    formData.append("speciality", data.speciality);
+    formData.append("experience", data.experience.toString());
+    formData.append("credentialUrl", data.credentialUrl);
+    formData.append("description", data.description);
+
+    await submitUserRole(formData);
+  };
 
   if (step === "choose-role") {
     return (
@@ -128,30 +143,130 @@ const OnboardingPage = () => {
             </CardDescription>
         </div>
 
-        <form className="space-y-6"> 
+        <form className="space-y-6 bg-muted/20 p-6 md:p-8 rounded-xl shadow-lg max-w-2xl mx-auto"
+          onSubmit={handleSubmit(onDoctorSubmit)}
+        >
+          {/* Speciality */}
           <div className="space-y-2">
-            <Label htmlFor="speciality"> Medical Speciality </Label>
-            <Select>
-                <SelectTrigger id="specialty">
-                  <SelectValue placeholder="Select your specialty" />
-                </SelectTrigger>
-                <SelectContent>
-                  {SPECIALTIES.map((spec) => (
-                    <SelectItem
-                      key={spec.name}
-                      value={spec.name}
-                      className="flex items-center gap-2"
-                    >
-                      <div className="flex items-center-gap-2">
+            <Label htmlFor="speciality" className="text-sm font-medium text-white">
+              Medical Speciality
+            </Label>
+            <Select 
+              value={specialityValue} 
+              onValueChange={(value) => {
+                setValue("speciality", value);
+                // Trigger validation
+                setValue("speciality", value, { shouldValidate: true });
+              }}
+            >
+              <SelectTrigger
+                id="speciality"
+                className="w-full bg-background border border-emerald-700/30 text-white focus:ring-2 focus:ring-emerald-500 rounded-md"
+              >
+                <SelectValue placeholder="Select your specialty" />
+              </SelectTrigger>
+              <SelectContent className="bg-background border border-emerald-700/30 text-white shadow-lg">
+                {SPECIALTIES.map((spec) => (
+                  <SelectItem
+                    key={spec.name}
+                    value={spec.name}
+                    className="cursor-pointer hover:bg-emerald-900/30 transition-colors"
+                  >
+                    <div className="flex items-center gap-2">
                       <span className="text-emerald-400">{spec.icon}</span>
                       {spec.name}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.speciality && (
+              <p className="text-sm text-red-500">{errors.speciality.message}</p>
+            )}
+          </div>
+
+          {/* Experience */}
+          <div className="space-y-2">
+            <Label htmlFor="experience" className="text-sm font-medium text-white">
+              Years of Experience
+            </Label>
+            <Input
+              id="experience"
+              type="number"
+              placeholder="e.g. 5"
+              className="bg-background border border-emerald-700/30 text-white"
+              {...register("experience", { valueAsNumber: true })}
+            />
+            {errors.experience && (
+              <p className="text-sm text-red-500">{errors.experience.message}</p>
+            )}
+          </div>
+
+          {/* Credential */}
+          <div className="space-y-2">
+            <Label htmlFor="credentialUrl" className="text-sm font-medium text-white">
+              Link to Credential Document
+            </Label>
+            <Input
+              id="credentialUrl"
+              type="url"
+              placeholder="https://example.com/my-degree.pdf"
+              className="bg-background border border-emerald-700/30 text-white"
+              {...register("credentialUrl")}
+            />
+            {errors.credentialUrl && (
+              <p className="text-sm text-red-500">{errors.credentialUrl.message}</p>
+            )}
+            <p className="text-sm text-muted-foreground">
+              Please provide a link to your medical degree or certification.
+            </p>
+          </div>
+
+          {/* Description */}
+          <div className="space-y-2">
+            <Label htmlFor="description" className="text-sm font-medium text-white">
+              Description of Your Services
+            </Label>
+            <Textarea
+              id="description"
+              placeholder="Describe your expertise, services, and approach to patient care."
+              rows={4}
+              className="bg-background border border-emerald-700/30 text-white"
+              {...register("description")}
+            />
+            {errors.description && (
+              <p className="text-sm text-red-500">{errors.description.message}</p>
+            )}
+          </div>
+
+          {/* Buttons */}
+          <div className="pt-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setStep("choose-role")}
+              className="border-emerald-900/30 w-full sm:w-auto"
+              disabled={loading}
+            >
+              Back
+            </Button>
+            <Button
+              type="submit"
+              className="bg-emerald-600 hover:bg-emerald-700 w-full sm:w-auto"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                "Submit for verification"
+              )}
+            </Button>
           </div>
         </form>
+
       </CardContent>
     </Card>
     )
