@@ -21,7 +21,7 @@ const DoctorProfileLayout = async  ({ children ,params }) => {
     if(!doctor) redirect("/doctors");
 
     return (
-        <div>
+        <div className='container mx-auto'>
             <PageHeader
                 title={"Dr. " + doctor.name}
                 backLink={`/doctors/${doctor.speciality}`}
