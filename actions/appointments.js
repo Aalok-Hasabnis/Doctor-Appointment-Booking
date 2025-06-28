@@ -162,21 +162,23 @@ export async function getAvailableTimeSlots(doctorId) {
       throw new Error("Doctor not found or not verified");
     }
 
-    const availability = await db.availability.findFirst({
+    const now = new Date();
+    const days = [now, addDays(now, 1), addDays(now, 2), addDays(now, 3)];
+    const lastDay = endOfDay(days[3]);
+
+    const availabilitySlots = await db.availability.findMany({
       where: {
         doctorId: doctor.id,
         status: "AVAILABLE",
+        startTime: {
+          lte: lastDay,
+        },
+        endTime: {
+          gte: now,
+        },
       },
     });
 
-    if (!availability) {
-      throw new Error("No availability set by doctor");
-    }
-
-    const now = new Date();
-    const days = [now, addDays(now, 1), addDays(now, 2), addDays(now, 3)];
-
-    const lastDay = endOfDay(days[3]);
     const existingAppointments = await db.appointment.findMany({
       where: {
         doctorId: doctor.id,
@@ -193,67 +195,58 @@ export async function getAvailableTimeSlots(doctorId) {
       const dayString = format(day, "yyyy-MM-dd");
       availableSlotsByDay[dayString] = [];
 
-      const availabilityStart = new Date(availability.startTime);
-      const availabilityEnd = new Date(availability.endTime);
+      for (const slot of availabilitySlots) {
+        const slotStart = new Date(slot.startTime);
+        const slotEnd = new Date(slot.endTime);
 
-      availabilityStart.setFullYear(
-        day.getFullYear(),
-        day.getMonth(),
-        day.getDate()
-      );
-      availabilityEnd.setFullYear(
-        day.getFullYear(),
-        day.getMonth(),
-        day.getDate()
-      );
+        // Match availability to current day
+        const availabilityStart = new Date(slotStart);
+        availabilityStart.setFullYear(day.getFullYear(), day.getMonth(), day.getDate());
 
-      let current = new Date(availabilityStart);
-      const end = new Date(availabilityEnd);
+        const availabilityEnd = new Date(slotEnd);
+        availabilityEnd.setFullYear(day.getFullYear(), day.getMonth(), day.getDate());
 
-      while (
-        isBefore(addMinutes(current, 30), end) ||
-        +addMinutes(current, 30) === +end
-      ) {
-        const next = addMinutes(current, 30);
+        let current = new Date(availabilityStart);
+        const end = new Date(availabilityEnd);
 
-        if (isBefore(current, now)) {
-          current = next;
-          continue;
-        }
+        while (isBefore(addMinutes(current, 30), end) || +addMinutes(current, 30) === +end) {
+          const next = addMinutes(current, 30);
 
-        const overlaps = existingAppointments.some((appointment) => {
-          const aStart = new Date(appointment.startTime);
-          const aEnd = new Date(appointment.endTime);
+          if (isBefore(current, now)) {
+            current = next;
+            continue;
+          }
 
-          return (
-            (current >= aStart && current < aEnd) ||
-            (next > aStart && next <= aEnd) ||
-            (current <= aStart && next >= aEnd)
-          );
-        });
+          const overlaps = existingAppointments.some((appt) => {
+            const aStart = new Date(appt.startTime);
+            const aEnd = new Date(appt.endTime);
 
-        if (!overlaps) {
-          availableSlotsByDay[dayString].push({
-            startTime: current.toISOString(),
-            endTime: next.toISOString(),
-            formatted: `${format(current, "h:mm a")} - ${format(
-              next,
-              "h:mm a"
-            )}`,
-            day: format(current, "EEEE, MMMM d"),
+            return (
+              (current >= aStart && current < aEnd) ||
+              (next > aStart && next <= aEnd) ||
+              (current <= aStart && next >= aEnd)
+            );
           });
-        }
 
-        current = next;
+          if (!overlaps) {
+            availableSlotsByDay[dayString].push({
+              startTime: current.toISOString(),
+              endTime: next.toISOString(),
+              formatted: `${format(current, "h:mm a")} - ${format(next, "h:mm a")}`,
+              day: format(current, "EEEE, MMMM d"),
+            });
+          }
+
+          current = next;
+        }
       }
     }
 
     const result = Object.entries(availableSlotsByDay).map(([date, slots]) => ({
       date,
-      displayDate:
-        slots.length > 0
-          ? slots[0].day
-          : format(new Date(date), "EEEE, MMMM d"),
+      displayDate: slots.length > 0
+        ? slots[0].day
+        : format(new Date(date), "EEEE, MMMM d"),
       slots,
     }));
 
@@ -318,6 +311,7 @@ export async function generateVideoToken(formData) {
     const now = new Date();
     const appointmentTime = new Date(appointment.startTime);
     const timeDifference = (appointmentTime - now) / (1000 * 60); 
+
     if (timeDifference > 30) {
       throw new Error(
         "The call will be available 30 minutes before the scheduled time"

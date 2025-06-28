@@ -185,26 +185,26 @@ export function AppointmentCard({
   }, [notesData, refetchAppointments, router]);
 
   useEffect(() => {
-    if (tokenData?.success) {
-      router.push(
-        `/video-call?sessionId=${tokenData.videoSessionId}&token=${tokenData.token}&appointmentId=${appointment.id}`
-      );
-    } else if (tokenData?.error) {
-      setAction(null);
-    }
-  }, [tokenData, appointment.id, router]);
+  console.log("Video token response", tokenData); 
+  if (tokenData?.success) {
+    router.push(
+      `/video-call?sessionId=${tokenData.videoSessionId}&token=${tokenData.token}&appointmentId=${appointment.id}`
+    );
+  } else if (tokenData?.error) {
+    toast.error("Unable to start video call");
+    setAction(null);
+  }
+}, [tokenData, appointment.id, router]);
 
   const isAppointmentActive = () => {
-    const now = new Date();
-    const appointmentTime = new Date(appointment.startTime);
-    const appointmentEndTime = new Date(appointment.endTime);
+  const now = new Date();
+  const appointmentTime = new Date(appointment.startTime);
+  const appointmentEndTime = new Date(appointment.endTime);
 
-    return (
-      (appointmentTime.getTime() - now.getTime() <= 30 * 60 * 1000 &&
-        now < appointmentTime) ||
-      (now >= appointmentTime && now <= appointmentEndTime)
-    );
-  };
+  // DEBUG: allow video call any time until end
+  return now <= appointmentEndTime;
+};
+
 
   const otherParty =
     userRole === "DOCTOR" ? appointment.patient : appointment.doctor;

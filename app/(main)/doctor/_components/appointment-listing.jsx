@@ -5,7 +5,7 @@ import { getDoctorAppointments } from "@/actions/doctor";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "lucide-react";
 import useFetch from "@/hooks/use-fetch";
-import AppointmentCard from "@/components/ui/appointment-card";
+import AppointmentCard from "@/components/appointment-card";
 
 export default function DoctorAppointmentsList({ appointments, userRole, user }) {
   const {
