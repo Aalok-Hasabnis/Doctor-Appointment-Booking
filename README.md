@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 🩺 Doctor Appointment Booking Platform
 
-## Getting Started
+A full-stack platform for booking and conducting video consultations with verified doctors. Patients can view availability, book appointments using credits, and join secure video calls. Doctors can manage slots, add notes, and complete appointments.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🚀 Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Role-based access for Patients, Doctors
+- View and book available 30-minute slots
+- Secure video calls via Vonage (OpenTok)
+- Notes, completion, and cancellation support
+- Credit-based booking system
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🧱 Tech Stack
 
-## Learn More
+- **Frontend**: Next.js 14 (App Router), TailwindCSS, shadcn/ui
+- **Backend**: Next.js Server Actions
+- **Auth**: Clerk.dev
+- **ORM/DB**: Prisma + PostgreSQL
+- **Video API**: Vonage Video SDK
 
-To learn more about Next.js, take a look at the following resources:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🛠️ Setup
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **Clone & Install**
+   ```bash
+   git clone <repo-url>
+   cd my-app
+   npm install
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+2. **Environment**
+   Create `.env`:
+   ```
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_XXXXXXXXXXXXXXXXXXXXXXXX
+    CLERK_SECRET_KEY=dummy_check_XXXXXX
+    NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+    NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+    NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
+    NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
+    NEXT_PUBLIC_VONAGE_APPLICATION_ID=your-vonage-app-id
+    VONAGE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYOUR_PRIVATE_KEY_CONTENT\n-----END PRIVATE KEY-----"
+    DATABASE_URL=postgresql://your_username:your_password@localhost:5432/your_database_name
+
+   ```
+
+3. **Prisma**
+   ```bash
+   npx prisma generate
+   npx prisma migrate dev --name init
+   ```
+
+4. **Run**
+   ```bash
+   npm run dev
+   ```
+
+---
+
+## 📹 Video Call
+
+- Enabled 30 minutes before appointment time.
+- Token-based access (patient & doctor only).
+- Uses `Vonage.Video.createSession()` + `generateClientToken()`.
+
+---
+
+## 💳 Credits System
+
+- 2 credits = 1 appointment
+- Patients start with default credits
+- `CreditTransaction` tracks usage and changes
+
+---
+
+## ✅ Roles
+
+| Role    | Features                          |
+|---------|-----------------------------------|
+| PATIENT | Book/cancel, join call, view notes |
+| DOCTOR  | Set availability, notes, complete |
+| ADMIN   | (Optional) verify, credit adjust   |
+
+---
+
+## 📌 Extras
+
+- Respects overlapping slot checks
+- All server actions use Next.js Server Actions
+- Fully responsive UI
+
+---
+
