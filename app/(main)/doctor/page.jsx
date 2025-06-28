@@ -1,16 +1,17 @@
 import { getDoctorAppointments, getDoctorAvailability } from '@/actions/doctor';
 import { getCurrentUser } from '@/actions/onboarding';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertCircle, Calendar, Clock, CreditCard, Users } from 'lucide-react';
+import { Calendar, Clock } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import React from 'react'
 import AvailabilitySettings from './_components/availability-settings';
+import DoctorAppointmentsList from './_components/appointment-listing';
 
 const DoctorDashBoard = async () => {
 
   const user = await getCurrentUser();
 
-  const [ appointments, availibilityData ] = await Promise.all([
+  const [ appointmentsData, availibilityData ] = await Promise.all([
     getDoctorAppointments(),
     getDoctorAvailability(),
   ]);
@@ -46,7 +47,9 @@ const DoctorDashBoard = async () => {
           </TabsTrigger>
         </TabsList>
         <div className='md:col-span-3'>
-        <TabsContent value="appointments" className="border-none p-0">Todo</TabsContent>
+        <TabsContent value="appointments" className="border-none p-0">
+          <DoctorAppointmentsList appointments={appointmentsData.appointments || []}/>
+        </TabsContent>
         <TabsContent value="availability" className="border-none p-0">
           <AvailabilitySettings slots={availibilityData.slots || []}/>
         </TabsContent>
